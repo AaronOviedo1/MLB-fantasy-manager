@@ -24,13 +24,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Create .env file
+      run: |
+        cat << EOF > .env
+        ESPN_S2=${{ secrets.ESPN_S2 }}
+        SWID=${{ secrets.SWID }}
+        LEAGUE_ID=${{ secrets.LEAGUE_ID }}
+        TEAM_ID=${{ secrets.TEAM_ID }}
+        SEASON=${{ secrets.SEASON }}
+        TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID=${{ secrets.TELEGRAM_CHAT_ID }}
+        EOF
+    
     - name: Run lineup optimizer
-      env:
-        ESPN_S2: ${{ secrets.ESPN_S2 }}
-        SWID: ${{ secrets.SWID }}
-        LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
-        TEAM_ID: ${{ secrets.TEAM_ID }}
-        SEASON: ${{ secrets.SEASON }}
-        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
       run: python lineup_optimizer.py
