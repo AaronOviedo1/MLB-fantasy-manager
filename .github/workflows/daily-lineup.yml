@@ -1,0 +1,36 @@
+name: Daily Lineup Optimizer
+
+on:
+  schedule:
+    # Ejecutar a las 9:00 AM Hermosillo time (16:00 UTC)
+    - cron: '0 16 * * *'
+  workflow_dispatch: # Permite ejecución manual
+
+jobs:
+  run-optimizer:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run lineup optimizer
+      env:
+        ESPN_S2: ${{ secrets.ESPN_S2 }}
+        SWID: ${{ secrets.SWID }}
+        LEAGUE_ID: ${{ secrets.LEAGUE_ID }}
+        TEAM_ID: ${{ secrets.TEAM_ID }}
+        SEASON: ${{ secrets.SEASON }}
+        TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      run: python lineup_optimizer.py
