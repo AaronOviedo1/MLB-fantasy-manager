@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from espn_api.baseball import League
 from mlb_api import MLBClient
 from decision_engine import MatchupAnalyzer, LineupDecisionMaker
+from waiver_analyzer import WaiverAnalyzer
 
 load_dotenv()
 
@@ -230,29 +231,41 @@ class LineupOptimizer:
 if __name__ == "__main__":
     import sys
     from notifier import TelegramNotifier
-    
+
     optimizer = LineupOptimizer()
     recs = optimizer.optimize_daily_lineup(dry_run=True)
-    
+
     # Imprimir en consola
     optimizer.print_recommendations(recs)
-    
+
+    # Análisis de Waiver Wire (después del análisis de lineup)
+    print("\n" + "=" * 80)
+    waiver_analyzer = WaiverAnalyzer(
+        optimizer.league,
+        optimizer.my_team,
+        optimizer.mlb_client
+    )
+    waiver_recs = waiver_analyzer.analyze_waivers()
+
     # SIEMPRE enviar por Telegram
     print("\n" + "=" * 80)
     print("📱 Enviando notificación por Telegram...")
     print("=" * 80)
-    
+
     notifier = TelegramNotifier()
     if notifier.enabled:
-        success = notifier.send_daily_lineup_report(recs, optimizer.my_team.team_name)
+        success = notifier.send_daily_lineup_report(
+            recs,
+            optimizer.my_team.team_name,
+            waiver_recommendations=waiver_recs
+        )
         if success:
             print("✅ Notificación enviada a Telegram\n")
         else:
             print("❌ Error enviando notificación\n")
     else:
         print("⚠️  Telegram no configurado - solo mostrando en consola\n")
-    
-    # Preguntar si quiere ver opciones adicionales
+
     if recs['to_activate'] or recs['to_bench']:
         print("=" * 80)
         print("💡 El reporte ya fue enviado a tu Telegram")
